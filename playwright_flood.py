@@ -12,8 +12,8 @@ from playwright.async_api import async_playwright
 
 TARGET_URL = os.getenv("TARGET_URL", "https://example.com/")
 DURATION = int(os.getenv("DURATION", "60"))
-CONCURRENCY = int(os.getenv("CONCURRENCY", "200"))
-REQ_PER_LOOP = int(os.getenv("REQ_PER_LOOP", "10000"))
+CONCURRENCY = int(os.getenv("CONCURRENCY", "20"))
+REQ_PER_LOOP = int(os.getenv("REQ_PER_LOOP", "100"))
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
