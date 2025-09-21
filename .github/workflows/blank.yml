@@ -30,9 +30,9 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Playwright asyncio
+      - name: Install Playwright 
         run: |
-          pip install playwright asyncio
+          pip install playwright 
           playwright install chromium
 
       - name: Run Flood
